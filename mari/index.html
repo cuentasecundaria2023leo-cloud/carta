@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>teamo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      overflow: hidden;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .flip-card {
+      background: transparent;
+      width: 90%;
+      max-width: 500px;
+      height: 90%;
+      max-height: 600px;
+      perspective: 1000px;
+    }
+
+    .flip-card-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      text-align: center;
+      transition: transform 1s;
+      transform-style: preserve-3d;
+    }
+
+    .flip-card.flipped .flip-card-inner {
+      transform: rotateY(180deg);
+    }
+
+    .flip-card-front,
+    .flip-card-back {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      border-radius: 20px;
+      box-shadow: 0 0 25px rgba(255, 0, 150, 0.7);
+      background: rgba(0, 0, 0, 0.6);
+      color: white;
+      padding: 18px;
+      overflow-y: auto;
+    }
+
+    .flip-card-front h1,
+    .flip-card-back h1 {
+      font-family: 'Dancing Script', cursive;
+      font-size: 2.5rem;
+      margin-bottom: 15px;
+      color: #ff6ec7;
+      text-shadow: 0 0 15px #ff6ec7, 0 0 25px #ff2d95, 0 0 40px #ff0080;
+    }
+
+    .flip-card-front { display: flex; flex-direction: column; justify-content: center; align-items: center; }
+    .flip-card-back { transform: rotateY(180deg); }
+
+    .romantic-text {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.4rem;
+      color: #ffe0f0;
+      text-shadow: 0 0 12px rgba(255, 105, 180, 0.6);
+      margin: 15px 0;
+    }
+
+    .photo {
+      margin-top: 15px;
+      border-radius: 20px;
+      max-width: 100%;
+      height: auto;
+      object-fit: cover;
+      opacity: 0;
+      transform: scale(0.9);
+      transition: all 1s ease;
+    }
+    .flip-card.flipped .photo {
+      opacity: 1;
+      transform: scale(1);
+      box-shadow: 0 0 25px rgba(255, 0, 200, 0.8),
+                  0 0 50px rgba(255, 0, 150, 0.6);
+      animation: glow 2s infinite alternate;
+    }
+    @keyframes glow {
+      from { box-shadow: 0 0 20px rgba(255, 0, 150, 0.6); }
+      to   { box-shadow: 0 0 40px rgba(255, 0, 200, 0.9); }
+    }
+
+    .btn {
+      margin-top: 15px;
+      padding: 10px 20px;
+      background: #ff2d95;
+      border: none;
+      border-radius: 20px;
+      color: white;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn:hover { background: #ff6ec7; transform: scale(1.05); }
+
+    /* Overlay desbloqueo */
+    #lockOverlay {
+      position: fixed; inset: 0;
+      background: rgba(10, 10, 15, 0.9);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      color: #fff;
+      flex-direction: column;
+    }
+    #lockBox {
+      width: 300px; max-width: 90%;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 15px;
+      text-align: center;
+    }
+    #lockTitle {
+      font-family: 'Dancing Script', cursive;
+      font-size: 1.5rem;
+      color: #ffb6ff;
+      margin-bottom: 10px;
+    }
+
+    .pattern-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 60px);
+      gap: 12px;
+      justify-content: center;
+      margin: 12px 0;
+    }
+    .p-dot {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.18);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      transition: transform .12s ease, box-shadow .12s ease;
+      user-select: none;
+    }
+    .p-dot.active {
+      background: linear-gradient(135deg, #ff6ab8, #ff2bd6);
+      box-shadow: 0 6px 24px rgba(255, 43, 214, 0.4);
+      transform: scale(1.06);
+    }
+    #statusMsg { font-size: 0.9rem; margin-top: 10px; color: #ffd6ea; min-height: 20px; }
+
+    /* corazones cayendo */
+    .falling-heart {
+      position: fixed;
+      top: -20px;
+      font-size: 20px;
+      color: #ff4da6;
+      animation: fall linear forwards;
+      z-index: 1000;
+    }
+    @keyframes fall {
+      to { transform: translateY(110vh); opacity: 0; }
+    }
+
+    /* Responsivo */
+    @media (max-width: 600px) {
+      .flip-card { height: 95%; }
+      .flip-card-front h1, .flip-card-back h1 { font-size: 2rem; }
+      .romantic-text { font-size: 1.2rem; }
+      .pattern-grid { grid-template-columns: repeat(3, 50px); gap: 10px; }
+      .p-dot { width: 50px; height: 50px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="flip-card" id="card">
+    <div class="flip-card-inner">
+      <!-- Lado frontal -->
+      <div class="flip-card-front">
+        <h1>Perdón 💖</h1>
+        <p>Perdóname si en algún momento te hice dudar de mí.<br>
+          No tengo a nadie más, mi corazón es solo tuyo.</p>
+        <img src="disculpa.jpg" alt="Gatito tierno" class="photo" style="opacity:1; max-height:180px;">
+        <button class="btn" onclick="showLock()">Tócame para desbloquear</button>
+      </div>
+
+      <!-- Overlay -->
+      <div id="lockOverlay">
+        <div id="lockBox">
+          <div id="lockTitle">Desbloqueo secreto</div>
+          <div class="pattern-grid" id="patternGrid">
+            <div class="p-dot" data-id="1"></div>
+            <div class="p-dot" data-id="2"></div>
+            <div class="p-dot" data-id="3"></div>
+            <div class="p-dot" data-id="4"></div>
+            <div class="p-dot" data-id="5"></div>
+            <div class="p-dot" data-id="6"></div>
+            <div class="p-dot" data-id="7"></div>
+            <div class="p-dot" data-id="8"></div>
+            <div class="p-dot" data-id="9"></div>
+          </div>
+          <div id="statusMsg">Dibuja el patrón correcto</div>
+        </div>
+      </div>
+
+      <!-- Lado trasero -->
+      <div class="flip-card-back">
+        <h1>Para ti, Mari 💕</h1>
+        <p class="romantic-text">"Eres como ese gato curioso que se mete en cada rincón de mi alma y lo llena de ternura."</p>
+        <p class="romantic-text">"Si tuviera siete vidas 🐾 como un gato, en todas volvería a buscarte."</p>
+        <img src="ft.jpg" alt="Foto contigo" class="photo">
+        <br>
+        <button class="btn" onclick="flipCard()">Volver</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Música -->
+  <audio id="bgMusic" src="musica.mp3"></audio>
+
+  <script>
+    const pattern = ["7", "4", "1", "5", "3", "6", "9"];
+    const overlay = document.getElementById('lockOverlay');
+    const grid = document.getElementById('patternGrid');
+    const dots = Array.from(grid.querySelectorAll('.p-dot'));
+    const statusMsg = document.getElementById('statusMsg');
+    const music = document.getElementById('bgMusic');
+
+    let currentInput = [];
+    let isDrawing = false;
+
+    function flipCard() {
+      document.getElementById("card").classList.toggle("flipped");
+    }
+    function showLock() { overlay.style.display = "flex"; }
+    function resetInput() {
+      currentInput = [];
+      dots.forEach(d => d.classList.remove('active'));
+    }
+    function arraysEqual(a, b) { return a.length === b.length && a.every((v,i)=>v===b[i]); }
+    function activateDot(el) { if (!el.classList.contains('active')) el.classList.add('active'); }
+
+    function startDrawing(id) {
+      isDrawing = true;
+      if (!currentInput.includes(id)) {
+        currentInput.push(id);
+        const el = dots.find(d => d.dataset.id === id);
+        if (el) activateDot(el);
+      }
+    }
+    function moveDrawing(id) {
+      if (!isDrawing) return;
+      if (!currentInput.includes(id)) {
+        currentInput.push(id);
+        const el = dots.find(d => d.dataset.id === id);
+        if (el) activateDot(el);
+      }
+    }
+    function endDrawing() {
+      if (!isDrawing) return;
+      isDrawing = false;
+
+      if (arraysEqual(currentInput, pattern)) {
+        statusMsg.textContent = "¡Correcto! Carta desbloqueada 💖";
+        statusMsg.style.color = "#bfffd8";
+        setTimeout(() => {
+          overlay.style.display = "none";
+          flipCard();
+          launchHearts();
+          music.play();
+        }, 700);
+      } else {
+        statusMsg.textContent = "Incorrecto, inténtalo de nuevo.";
+        statusMsg.style.color = "#ffd1d1";
+        setTimeout(() => resetInput(), 700);
+      }
+    }
+
+    dots.forEach(dot => {
+      dot.addEventListener('mousedown', (e) => { e.preventDefault(); startDrawing(dot.dataset.id); });
+      dot.addEventListener('mouseenter', (e) => { if (e.buttons === 1) moveDrawing(dot.dataset.id); });
+    });
+    document.addEventListener('mouseup', () => endDrawing());
+
+    grid.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      isDrawing = true;
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (el && el.classList.contains('p-dot')) startDrawing(el.dataset.id);
+    });
+    grid.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      const touch = e.touches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      if (el && el.classList.contains('p-dot')) moveDrawing(el.dataset.id);
+    });
+    grid.addEventListener('touchend', (e) => { e.preventDefault(); endDrawing(); });
+
+    function launchHearts() {
+      for (let i = 0; i < 20; i++) {
+        const heart = document.createElement("div");
+        heart.classList.add("falling-heart");
+        heart.textContent = "💖";
+        heart.style.left = Math.random() * 100 + "vw";
+        heart.style.fontSize = Math.random() * 15 + 15 + "px";
+        heart.style.animationDuration = (Math.random() * 3 + 2) + "s";
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 5000);
+      }
+    }
+
+    resetInput();
+  </script>
+</body>
+</html>
